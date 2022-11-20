@@ -1,4 +1,6 @@
 export interface IOtp{
     email: string;
-    phone: number
+    phone: number;
+    secret?:string;
+
 }
