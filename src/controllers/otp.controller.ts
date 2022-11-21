@@ -2,6 +2,7 @@
 import speakeasy from "speakeasy"
 import {Request,Response} from "express"
 import * as otpServices from "../services/otp.services"
+import { mailSenderFunction } from "../config/mail";
 
 
 export const createOtp= async (req:Request,res:Response)=>{
@@ -15,8 +16,18 @@ export const createOtp= async (req:Request,res:Response)=>{
             encoding:"base32"
         })
 
-        const otpData = await otpServices.createOtp({email,phone})
+        const mailOptionsSender = {
+            to: email,
+            subject: `otp sent seuccessfully to ${email}`,
+            otp:`your OTP is: ${otp}`
+          };
+      
+          
+          mailSenderFunction(mailOptionsSender);
+
+        // const otpData = await otpServices.createOtp({email,phone})
         res.send({"otp":otp,"secret":secretKey.base32})
+
        console.log(secretKey)
     }
     catch{
