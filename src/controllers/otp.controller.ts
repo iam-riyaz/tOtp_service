@@ -4,6 +4,8 @@ import {Request,Response} from "express"
 import * as otpServices from "../services/otp.services"
 import { mailSenderFunction } from "../config/mail";
 
+import qrcode from "qrcode";
+
 
 export const createOtp= async (req:Request,res:Response)=>{
     try{
@@ -13,12 +15,22 @@ export const createOtp= async (req:Request,res:Response)=>{
         console.log(secretKey)
         const otp= speakeasy.totp({
             secret:secretKey.base32,
-            encoding:"base32"
+            encoding:"base32",
+            step:45
         })
+const url= secretKey.otpauth_url || ""
+        qrcode.toDataURL(url, function(err, data_url) {
+            console.log("the  QR code url: ",data_url);
+           
+            // Display this data URL to the user in an <img> tag
+            // Example:
+        
+
+          })
 
         const mailOptionsSender = {
             to: email,
-            subject: `otp sent seuccessfully to ${email}`,
+            subject: `OTP for email verification ${email}`,
             otp:`your OTP is: ${otp}`
           };
       
@@ -42,7 +54,7 @@ export const validateOtp= async (req:Request,res:Response)=>{
         secret:req.body.secretKey,
         encoding:"base32",
         token:req.body.otp,
-        window:1
+        window:0
        })
        console.log(req.body.secretKey,req.body.otp)
        res.send({valid})

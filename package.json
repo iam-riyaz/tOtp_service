@@ -24,11 +24,13 @@
   },
   "dependencies": {
     "@types/nodemailer": "^6.4.6",
+    "@types/qrcode": "^1.5.0",
     "@types/speakeasy": "^2.0.7",
     "body-parser": "^1.20.1",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "nodemailer": "^6.8.0",
+    "qrcode": "^1.5.1",
     "speakeasy": "^2.0.0",
     "ts-node": "^10.9.1"
   }
