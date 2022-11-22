@@ -1,9 +1,10 @@
-export interface IOtp{
+export interface ITempUserData{
     
     email: string;
     phone: number;
-    secret?:string;
+    secretKey?:string;
     expireAt?:Date;
     createdAt?:Date
 
 }
+

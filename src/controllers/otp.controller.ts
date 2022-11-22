@@ -10,21 +10,24 @@ import qrcode from "qrcode";
 export const createOtp = async (req: Request, res: Response) => {
   try {
     const { email, phone } = req.body;
-    const secretKey = speakeasy.generateSecret({ length: 20 });
+    const secretKeyObj = speakeasy.generateSecret({ length: 20 });
+
+    const secretKey = secretKeyObj.base32;
+
     const otp = speakeasy.totp({
-      secret: secretKey.base32,
+      secret: secretKey,
       encoding: "base32",
-      step: 60,
+      step:30
     });
 
-    // const url = secretKey.otpauth_url || "";
+    const url = secretKeyObj.otpauth_url || "";
 
-    // // Create QR code URL
-    // qrcode.toDataURL(url, function (err, data_url) {
-    //   res.send(`<h1>this the QR code for secret</h1>
-    //             <img src="${data_url}">
-    //             <h3>if unable to scan the QR code enter KEY <h2>${secretKey.base32}</h2> </h3>`);
-    // });
+    // Create QR code URL
+    qrcode.toDataURL(url, function (err, data_url) {
+      res.send(`<h1>this the QR code for secret</h1>
+                <img src="${data_url}">
+                <h3>if unable to scan the QR code enter KEY <h2>${secretKey}</h2> </h3>`);
+    });
 
     // Email sending otptions
     const mailOptionsSender = {
@@ -32,14 +35,11 @@ export const createOtp = async (req: Request, res: Response) => {
       subject: `OTP for email verification ${email}`,
       otp: `your OTP is: ${otp} and valid for 60 seconds only`,
     };
-    // mailSenderFunction(mailOptionsSender);
+    mailSenderFunction(mailOptionsSender);
 
+    const tempUserData = await otpServices.createOtp({ email, phone,secretKey }) ;
 
-    const secret = secretKey.base32;
-
-    res.send({secret,otp})
-
-    // const otpData = await otpServices.createOtp({ email, phone });
+    // res.send({tempUserData,otp})
   } 
   catch
    {
@@ -58,8 +58,10 @@ export const validateOtp = async (req: Request, res: Response) => {
       token: req.body.otp,
       window: 0,
     });
+
+    
    
-    res.send({ valid });
+    res.send( {valid} );
   } catch {
     res.send("error in validatation otp");
   }
@@ -67,6 +69,9 @@ export const validateOtp = async (req: Request, res: Response) => {
 
 export const resendOtp = async (req: Response, res: Response) => {
   try {
+
+    
+
   } 
   catch 
   {
