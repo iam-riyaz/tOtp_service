@@ -19,19 +19,24 @@
   },
   "homepage": "https://github.com/iam-riyaz/tOtp_service#readme",
   "devDependencies": {
+    "@types/express-session": "^1.17.5",
     "nodemon": "^2.0.20",
     "typescript": "^4.9.3"
   },
   "dependencies": {
+    "@types/node-fetch": "^2.6.2",
     "@types/nodemailer": "^6.4.6",
     "@types/qrcode": "^1.5.0",
     "@types/speakeasy": "^2.0.7",
     "body-parser": "^1.20.1",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "node-fetch": "^3.3.0",
     "nodemailer": "^6.8.0",
     "qrcode": "^1.5.1",
     "speakeasy": "^2.0.0",
+    "springedge": "^1.0.6",
     "ts-node": "^10.9.1"
   }
 }
