@@ -1,60 +1,52 @@
 import { ITempUserData } from "../models/tempUserData.model";
-import { IUserData } from "../models/UserData.model";
+
 import { TempUserDataMongo } from "../schema/tempUserData.schema";
-import { UserDataMongo } from "../schema/UserData.schema";
+// import { UserDataMongo } from "../schema/UserData.schema";
 
+export const createOtp = async (tempUserData: ITempUserData) => {
+  const { email } = tempUserData;
+  const existOrNot = await TempUserDataMongo.findOne({ email });
 
-export const createOtp= async (tempUserData:ITempUserData)=>{
-    const {email}= tempUserData
-    const existOrNot = await TempUserDataMongo.findOne({email})
+  if (existOrNot) {
+    await TempUserDataMongo.findByIdAndDelete(existOrNot._id);
+  }
 
-    if(existOrNot){
-          await TempUserDataMongo.findByIdAndDelete(existOrNot._id)
-    }
+  const tempData = new TempUserDataMongo({
+    ...tempUserData,
+    expireAt: Date.now() + 1000 * 60 * 30,
+  });
+  return tempData.save();
+};
 
-    const tempData = new TempUserDataMongo({...tempUserData,expireAt:Date.now()+1000*60*5})
-    return tempData.save()
-}
+export const validateOtp = async (email: string) => {
+  const data = await TempUserDataMongo.findOne({ email });
 
+  return data;
+};
 
-export const validateOtp= async(userData:IUserData)=>{
+export const checkFlag = async (email: string) => {
+  const check = await TempUserDataMongo.findOne({ email });
 
-    const {email}=userData
-   console.log(email)
-   const data= await TempUserDataMongo.findOne({email})
+  return check;
+};
 
-//    const _id=data?._id || ""
+export const updateFlag = async (email: string, flag: boolean) => {
+  const updateFlag = await TempUserDataMongo.findOneAndUpdate(
+    { email },
+    { flag },
+    { new: true }
+  );
+  return updateFlag;
+};
 
-//    const updateFlag = await TempUserDataMongo.findByIdAndUpdate(_id,{flag},{new:true})
+export const resendOtp = async (email: string) => {
+  const resendOtp = await TempUserDataMongo.findOne({ email });
 
-   return data
+  if (!resendOtp) {
+    return false;
+  }
 
-}
+  const resendSecret = resendOtp?.secretKey;
 
-export const checkFlag= async (email:string)=>{
-    const check= await TempUserDataMongo.findOne({email})
-
-    return check
-}
-
-export const updateFlag = async (email:string,flag:boolean)=>{
-    
-   const updateFlag = await TempUserDataMongo.findOneAndUpdate({email},{flag},{new:true})
-   return updateFlag
-}
-
-
-export const resendOtp= async (email:string)=>{
-
-  
-    const resendOtp = await TempUserDataMongo.findOne({email})
-
-    if(!resendOtp){
-        return false
-    }
-
-    const resendSecret= resendOtp?.secretKey
-
-    return resendSecret
-
-}
+  return resendSecret;
+};

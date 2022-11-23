@@ -12,7 +12,7 @@ const port= process.env.PORT || 2000
 
 app.use(express.json())
 
-app.use("/otp",otpRouter)
+app.use("/v1/otp",otpRouter)
 
 connectDB().then(()=>{
     
