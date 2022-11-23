@@ -7,3 +7,4 @@ export const otpRouter=express.Router()
 
 otpRouter.post("/otpCreate",otpController.createOtp)
 otpRouter.post("/otpValidate",otpController.validateOtp)
+otpRouter.post("/otpResend",otpController.resendOtp)

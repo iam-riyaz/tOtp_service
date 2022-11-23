@@ -31,8 +31,30 @@ export const validateOtp= async(userData:IUserData)=>{
 
 }
 
+export const checkFlag= async (email:string)=>{
+    const check= await TempUserDataMongo.findOne({email})
+
+    return check
+}
+
 export const updateFlag = async (email:string,flag:boolean)=>{
     
    const updateFlag = await TempUserDataMongo.findOneAndUpdate({email},{flag},{new:true})
    return updateFlag
+}
+
+
+export const resendOtp= async (email:string)=>{
+
+  
+    const resendOtp = await TempUserDataMongo.findOne({email})
+
+    if(!resendOtp){
+        return false
+    }
+
+    const resendSecret= resendOtp?.secretKey
+
+    return resendSecret
+
 }
