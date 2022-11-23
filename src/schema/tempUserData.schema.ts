@@ -6,7 +6,9 @@ const TotpSchema= new mongoose.Schema<ITempUserData>({
     phone: {type: "number", required: true},
     secretKey:{type: "string", required: false},
     expireAt: { type: Date, default:Date.now },
-    createdAt: { type: Date, default:Date.now}
+    createdAt: { type: Date, default:Date.now},
+    flag: {type: "boolean", default:false},
+    resend:{type:"number",default:0}
 })
 
 export const TempUserDataMongo=mongoose.model<ITempUserData>('tempUserData', TotpSchema)

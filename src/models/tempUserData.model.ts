@@ -4,7 +4,9 @@ export interface ITempUserData{
     phone: number;
     secretKey?:string;
     expireAt?:Date;
-    createdAt?:Date
+    createdAt?:Date;
+    flag?:boolean;
+    resend?:number
 
 }
 

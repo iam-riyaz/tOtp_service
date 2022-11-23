@@ -1,12 +1,13 @@
 import speakeasy from "speakeasy";
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import * as otpServices from "../services/otp.services";
 import { mailSenderFunction } from "../config/mail";
 import express from "express";
 import qrcode from "qrcode";
+import { ITempUserData } from "../models/tempUserData.model";
 
 
-//controller to create secret key for otp services and send an OTP to provided email address 
+//controller to create secret key for otp services and send an OTP to provided email address
 export const createOtp = async (req: Request, res: Response) => {
   try {
     const { email, phone } = req.body;
@@ -17,14 +18,14 @@ export const createOtp = async (req: Request, res: Response) => {
     const otp = speakeasy.totp({
       secret: secretKey,
       encoding: "base32",
-      step:30
+      step: 30,
     });
 
     const url = secretKeyObj.otpauth_url || "";
 
-    // Create QR code URL
+    // method to  Create QR code URL and send response
     qrcode.toDataURL(url, function (err, data_url) {
-      res.send(`<h1>this the QR code for secret</h1>
+      res.status(200).send(`<h1>this the QR code for secret</h1>
                 <img src="${data_url}">
                 <h3>if unable to scan the QR code enter KEY <h2>${secretKey}</h2> </h3>`);
     });
@@ -35,46 +36,76 @@ export const createOtp = async (req: Request, res: Response) => {
       subject: `OTP for email verification ${email}`,
       otp: `your OTP is: ${otp} and valid for 60 seconds only`,
     };
-    mailSenderFunction(mailOptionsSender);
+    // mailSenderFunction(mailOptionsSender);
 
-    const tempUserData = await otpServices.createOtp({ email, phone,secretKey }) ;
+    const tempUserData = await otpServices.createOtp({
+      email,
+      phone,
+      secretKey,
+    });
 
-    // res.send({tempUserData,otp})
-  } 
-  catch
-   {
-    res.send("this is an error");
-   }
+    // res.status(200).send({tempUserData,otp})
+  } catch {
+    res.status(400).send("this is an error in creating OTP");
+  }
 };
 
-
-// controller to validate OTP 
+// controller to validate OTP
 export const validateOtp = async (req: Request, res: Response) => {
   try {
-    console.log(req.body.secret,req.body.otp)
+          const email= req.body.email
+          
+    const tempUserData= await otpServices.validateOtp({email})
+
+
+
+    console.log({tempUserData});
+    const secretKey= tempUserData?.secretKey || ""
+
+    if(tempUserData?.flag===true){
+          res.status(400).send("you can use OTP's only one time, this otp is already use")
+          return;
+    }
+    
     const valid = speakeasy.totp.verify({
-      secret: req.body.secretKey,
+      secret: secretKey,
       encoding: "base32",
       token: req.body.otp,
       window: 0,
     });
 
+    if(!valid){
+      res.status(200).send("your OTP is Wrong")
+      return;
+    }
+
+
     
+    if(valid){
+      const email=tempUserData?.email ||""
+      const flag=true;
+           const updateFlag= otpServices.updateFlag(email,flag)
+
+
+
+
+
+      res.status(200).send("your OTP verification is successful")
+      return
+    }
+
+    else{
+      res.status(200).send("your OTP in not valid");
+      return
+    }
+
    
-    res.send( {valid} );
   } catch {
-    res.send("error in validatation otp");
+    res.status(400).send("error in validatation OTP");
   }
 };
 
 export const resendOtp = async (req: Response, res: Response) => {
   try {
-
-    
-
-  } 
-  catch 
-  {
-
-  }
+  } catch {}
 };
