@@ -7,6 +7,8 @@ import { json } from "body-parser";
 
 //controller to create secret key for otp services and send an OTP to provided email address
 export const createOtp = async (req: Request, res: Response) => {
+  res.status(200).send("check")
+  
   try {
     const { email, phone } = req.body;
     const secretKeyObj = speakeasy.generateSecret({ length: 20 });
@@ -44,7 +46,7 @@ export const createOtp = async (req: Request, res: Response) => {
         return;
       }
 
-      // mailSenderFunction(mailOptionsSender); //email sending function
+      mailSenderFunction(mailOptionsSender); //email sending function
       console.info("OTP sent to Email:", Date.now());
 
       res.status(200).send({
@@ -82,6 +84,7 @@ export const validateOtp = async (req: Request, res: Response) => {
     const tempUserData = await otpServices.validateOtp(email);
 
     const secretKey = tempUserData?.secretKey || "";
+    console.info("get secretKey form database for verification:", Date.now());
 
     const valid = speakeasy.totp.verify({
       secret: secretKey,
@@ -89,14 +92,16 @@ export const validateOtp = async (req: Request, res: Response) => {
       token: req.body.otp,
       window: 0,
     });
+    console.info("otp verification prosess done :", Date.now());
 
     if (!valid) {
       res.status(401).send({
         success: false,
-        statusCode:401,
+        statusCode: 401,
         TraceID: Date.now(),
-        Message:"Invalid OTP Entered, not verified",
-        path:"http://localhost:2000/v1/otp/validateOtp"});
+        Message: "Invalid OTP Entered, not verified",
+        path: "http://localhost:2000/v1/otp/validateOtp",
+      });
       return;
     }
 
@@ -105,27 +110,28 @@ export const validateOtp = async (req: Request, res: Response) => {
       const check = await otpServices.checkFlag(email);
       if (check?.flag === true) {
         res.status(409).send({
-          success:false,
-          statusCode:409,
-          TraceID:Date.now(),
-          Message:"OTP already verified , can't be use this OTP agian",
-          path:"http://localhost:2000/v1/otp/validateOtp"
+          success: false,
+          statusCode: 409,
+          TraceID: Date.now(),
+          Message: "OTP already verified , can't be use this OTP agian",
+          path: "http://localhost:2000/v1/otp/validateOtp",
         });
         return;
       }
 
       const flag = true;
-        await otpServices.updateFlag(email, flag);
+      await otpServices.updateFlag(email, flag);
 
       res.status(200).send({
         success: true,
-        StatusCode:200,
-        TraceID:Date.now(),
-        Message:"OTP verified successfully"
-        
+        StatusCode: 200,
+        TraceID: Date.now(),
+        Message: "OTP verified successfully",
       });
-      
-    } 
+
+      console.info("otp verified successfully:", Date.now());
+    }
+    
   } catch {
     res.status(400).send({
       success: false,
@@ -133,7 +139,7 @@ export const validateOtp = async (req: Request, res: Response) => {
       TraceID: Date.now(),
       Message: "bad request, Error at validation of OTP",
       path: "http://localhost:2000/v1/otp/createOtp",
-      });
+    });
   }
 };
 
@@ -152,11 +158,12 @@ export const resendOtp = async (req: Request, res: Response) => {
 
     if (!secretFinder) {
       res.status(404).send({
-        success:false,
-        statusCode:404,
+        success: false,
+        statusCode: 404,
         TraceID: Date.now(),
-        message:"User not exist in DB can not Resend OTP",
-        path: "http://localhost:2000/v1/otp/createOtp"});
+        message: "User not exist in DB can not Resend OTP",
+        path: "http://localhost:2000/v1/otp/createOtp",
+      });
       return;
     }
 
@@ -172,13 +179,15 @@ export const resendOtp = async (req: Request, res: Response) => {
       success: true,
       statusCode: 200,
       TraceID: Date.now(),
-      message:"otp is successfully Re-Sent to your email address"});
+      message: "otp is successfully Re-Sent to your email address",
+    });
   } catch {
     res.status(400).send({
       success: false,
       statusCode: 400,
       TraceID: Date.now(),
-      message:"bad request, error in resending OTP",
-      path: "http://localhost:2000/v1/otp/createOtp"});
+      message: "bad request, error in resending OTP",
+      path: "http://localhost:2000/v1/otp/createOtp",
+    });
   }
 };
