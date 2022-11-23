@@ -1,7 +1,7 @@
 import { ITempUserData } from "../models/tempUserData.model";
 
 import { TempUserDataMongo } from "../schema/tempUserData.schema";
-// import { UserDataMongo } from "../schema/UserData.schema";
+
 
 export const createOtp = async (tempUserData: ITempUserData) => {
   const { email } = tempUserData;

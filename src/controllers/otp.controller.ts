@@ -1,13 +1,13 @@
-import speakeasy, { time } from "speakeasy";
+import speakeasy from "speakeasy";
 import { Request, Response } from "express";
 import * as otpServices from "../services/otp.services";
 import { mailSenderFunction } from "../config/mail";
 import qrcode from "qrcode";
-import { json } from "body-parser";
+
 
 //controller to create secret key for otp services and send an OTP to provided email address
 export const createOtp = async (req: Request, res: Response) => {
-  res.status(200).send("check")
+ 
   
   try {
     const { email, phone } = req.body;
@@ -28,7 +28,7 @@ export const createOtp = async (req: Request, res: Response) => {
     const mailOptionsSender = {
       to: email,
       subject: `OTP for email verification ${email}`,
-      otp: `your OTP is: ${otp} and valid for 60 seconds only`,
+      otp: `your OTP is: ${otp} and valid for 30 seconds only`,
     };
 
     // method to  Create QR code URL and send response

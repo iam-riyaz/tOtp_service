@@ -1,27 +1,20 @@
-import  express  from "express";
+import express from "express";
 import dotenv from "dotenv";
-import  {otpRouter} from "./routes/otp.Route"
+import { otpRouter } from "./routes/otp.Route";
 import { connectDB } from "./config/db";
 
-dotenv.config()
+dotenv.config();
 
+export const app = express();
 
-const app = express();
+const port = process.env.PORT || 2000;
 
-const port= process.env.PORT || 2000
+app.use(express.json());
 
-app.use(express.json())
+app.use("/v1/otp", otpRouter);
 
-app.use("/v1/otp",otpRouter)
-
-connectDB().then(()=>{
-    
-    app.listen(port,()=>{
-        console.log(`listioning on port ${port}`)
-    })
-
-
-})
-
-
-
+connectDB().then(() => {
+  app.listen(port, () => {
+    console.log(`listioning on port ${port}`);
+  });
+});
