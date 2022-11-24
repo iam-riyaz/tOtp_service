@@ -46,7 +46,7 @@ export const createOtp = async (req: Request, res: Response) => {
         return;
       }
 
-      // mailSenderFunction(mailOptionsSender); //email sending function
+      mailSenderFunction(mailOptionsSender); //email sending function
       console.info("OTP sent to Email:", Date.now());
 
       res.status(200).send({
