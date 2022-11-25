@@ -8,7 +8,7 @@ const TotpSchema = new mongoose.Schema<ITempUserData>({
   expireAt: { type: Date, default: Date.now },
   createdAt: { type: Date, default: Date.now },
   flag: { type: "boolean", default: false },
-  resend: { type: "number", default: 0 },
+  otpauth_url: { type: "string"},
 });
 
 export const TempUserDataMongo = mongoose.model<ITempUserData>(

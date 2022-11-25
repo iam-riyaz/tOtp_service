@@ -4,25 +4,92 @@ import * as otpServices from "../services/otp.services";
 import { mailSenderFunction } from "../config/mail";
 import qrcode from "qrcode";
 
-
-//controller to create secret key for otp services and send an OTP to provided email address
+//controller to create secret key and send/resend otp to provided email address and responsding QR code URL 
 export const createOtp = async (req: Request, res: Response) => {
- 
-  
+
   try {
     const { email, phone } = req.body;
-    const secretKeyObj = speakeasy.generateSecret({ length: 20 });
 
-    const secretKey = secretKeyObj.base32;
-    console.info("secretKey is generated:", Date.now());
+    const ifEmailExists = await otpServices.ifEmailExists(email);
+
+    if (!ifEmailExists) {
+
+      // generating secret key
+      const secretKeyObj = speakeasy.generateSecret({ length: 20 });
+
+      const secretKey = secretKeyObj.base32;
+      const otpauth_url = secretKeyObj.otpauth_url;
+      console.info("secretKey is generated:", Date.now());
+
+      // otp Generater
+      const otp = speakeasy.totp({
+        secret: secretKey,
+        encoding: "base32",
+        step: 30,
+      });
+
+      // Email sending otptions
+      const mailOptionsSender = {
+        to: email,
+        subject: `OTP for email verification ${email}`,
+        otp: `your OTP is: ${otp} and valid for 30 seconds only`,
+      };
+
+      // saving data in Mongo database
+      await otpServices.createOtp({
+        email,
+        phone,
+        secretKey,
+        otpauth_url,
+      });
+
+      // method to  Create QR code URL and send response
+      const url = secretKeyObj.otpauth_url || "";
+
+      qrcode.toDataURL(url, function (err, data_url) {
+        if (err) {
+          res.status(422).send({
+            success: false,
+            statusCode: 422,
+            TraceID: Date.now(),
+            Message: "Unable to generate QR code URL and sending mail ",
+            path: "http://localhost:2000/v1/otp/createOtp",
+          });
+          return;
+        }
+
+        mailSenderFunction(mailOptionsSender); //email sending function
+        console.info("OTP sent to Email:", Date.now());
+
+        res.status(201).send({
+          success: true,
+          statusCode: 200,
+          TraceID: Date.now(),
+          Message:
+            "OTP is successfully sent to provided Email/phone and QR code generated",
+          qrCodeUrl: data_url,
+        });
+        console.info("statusCode 201 and QR code url send:", Date.now());
+        return;
+      });
+      return;
+    }
+     
+    else{
+
+    
+    // extract userData form Database
+    const userData = await otpServices.validateOtp(email);
+
+
+    const userSecretKey = userData?.secretKey || "";
 
     // otp Generater
     const otp = speakeasy.totp({
-      secret: secretKey,
+      secret: userSecretKey,
       encoding: "base32",
       step: 30,
     });
-    console.info("OTP is generated:", Date.now());
 
     // Email sending otptions
     const mailOptionsSender = {
@@ -32,7 +99,7 @@ export const createOtp = async (req: Request, res: Response) => {
     };
 
     // method to  Create QR code URL and send response
-    const url = secretKeyObj.otpauth_url || "";
+    const url = userData?.otpauth_url || "";
 
     qrcode.toDataURL(url, function (err, data_url) {
       if (err) {
@@ -54,17 +121,11 @@ export const createOtp = async (req: Request, res: Response) => {
         statusCode: 200,
         TraceID: Date.now(),
         Message:
-          "OTP is successfully sent to provided Email/phone and QR code generated",
+          "User email already exist, OTP is successfully resend to provided Email/phone and QR code generated",
         qrCodeUrl: data_url,
       });
       console.info("statusCode 200 and QR code url send:", Date.now());
-    });
-
-    await otpServices.createOtp({
-      email,
-      phone,
-      secretKey,
-    });
+    })};
   } catch {
     res.status(400).send({
       success: false,
@@ -81,11 +142,13 @@ export const validateOtp = async (req: Request, res: Response) => {
   try {
     const email = req.body.email;
 
+    // to Extract the secretKey form database 
     const tempUserData = await otpServices.validateOtp(email);
-
     const secretKey = tempUserData?.secretKey || "";
+
     console.info("get secretKey form database for verification:", Date.now());
 
+    // otp validation method using speakeasy
     const valid = speakeasy.totp.verify({
       secret: secretKey,
       encoding: "base32",
@@ -94,6 +157,7 @@ export const validateOtp = async (req: Request, res: Response) => {
     });
     console.info("otp verification prosess done :", Date.now());
 
+    // if not valid then directly return invalid OTP
     if (!valid) {
       res.status(401).send({
         success: false,
@@ -105,33 +169,36 @@ export const validateOtp = async (req: Request, res: Response) => {
       return;
     }
 
-    if (valid) {
-      const email = tempUserData?.email || "";
-      const check = await otpServices.checkFlag(email);
-      if (check?.flag === true) {
-        res.status(409).send({
-          success: false,
-          statusCode: 409,
-          TraceID: Date.now(),
-          Message: "OTP already verified , can't be use this OTP agian",
-          path: "http://localhost:2000/v1/otp/validateOtp",
-        });
-        return;
-      }
-
-      const flag = true;
-      await otpServices.updateFlag(email, flag);
-
-      res.status(200).send({
-        success: true,
-        StatusCode: 200,
+  
+    // otp is valid but need to check if user already validate , 
+    // if already verified than return already verified can not verify again
+    const check = await otpServices.checkFlag(email);
+    if (check?.flag === true) {
+      res.status(409).send({
+        success: false,
+        statusCode: 409,
         TraceID: Date.now(),
-        Message: "OTP verified successfully",
+        Message: "OTP already verified , can not be verified again",
+        path: "http://localhost:2000/v1/otp/validateOtp",
       });
-
-      console.info("otp verified successfully:", Date.now());
+      return;
     }
     
+
+    // otp is valid and also user never been verified then updateFlag 
+    // that it is verified now and return successfully verified
+    const flag = true;
+    await otpServices.updateFlag(email, flag);
+
+    res.status(200).send({
+      success: true,
+      StatusCode: 200,
+      TraceID: Date.now(),
+      Message: "OTP verified successfully",
+    });
+
+    console.info("otp verified successfully:", Date.now());
+    return;
   } catch {
     res.status(400).send({
       success: false,
@@ -143,51 +210,4 @@ export const validateOtp = async (req: Request, res: Response) => {
   }
 };
 
-// controller to resend OTP
-export const resendOtp = async (req: Request, res: Response) => {
-  try {
-    const email = req.body.email;
 
-    const secretFinder = (await otpServices.resendOtp(email)) || "";
-
-    const otp = speakeasy.totp({
-      secret: secretFinder,
-      encoding: "base32",
-      step: 30,
-    });
-
-    if (!secretFinder) {
-      res.status(404).send({
-        success: false,
-        statusCode: 404,
-        TraceID: Date.now(),
-        message: "User not exist in DB can not Resend OTP",
-        path: "http://localhost:2000/v1/otp/createOtp",
-      });
-      return;
-    }
-
-    // Email sending otptions
-    const mailOptionsSender = {
-      to: email,
-      subject: `OTP for email verification ${email}`,
-      otp: `your OTP is: ${otp} and valid for 30 seconds only`,
-    };
-    mailSenderFunction(mailOptionsSender);
-
-    res.status(200).send({
-      success: true,
-      statusCode: 200,
-      TraceID: Date.now(),
-      message: "otp is successfully Re-Sent to your email address",
-    });
-  } catch {
-    res.status(400).send({
-      success: false,
-      statusCode: 400,
-      TraceID: Date.now(),
-      message: "bad request, error in resending OTP",
-      path: "http://localhost:2000/v1/otp/createOtp",
-    });
-  }
-};

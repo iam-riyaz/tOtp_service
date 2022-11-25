@@ -5,5 +5,5 @@ export interface ITempUserData {
   expireAt?: Date;
   createdAt?: Date;
   flag?: boolean;
-  resend?: number;
+  otpauth_url?: string;
 }
