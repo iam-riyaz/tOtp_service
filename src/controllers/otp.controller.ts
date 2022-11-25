@@ -6,10 +6,10 @@ import qrcode from "qrcode";
 
 //controller to create secret key and send/resend otp to provided email address and responsding QR code URL 
 export const createOtp = async (req: Request, res: Response) => {
-
+ 
   try {
     const { email, phone } = req.body;
-
+     
     const ifEmailExists = await otpServices.ifEmailExists(email);
 
     if (!ifEmailExists) {
@@ -74,7 +74,7 @@ export const createOtp = async (req: Request, res: Response) => {
       });
       return;
     }
-     
+    
     else{
 
     

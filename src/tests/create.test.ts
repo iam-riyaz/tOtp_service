@@ -2,14 +2,19 @@
 import { response } from "express";
 import request from "superagent";
 import supertest from "supertest";
+import { app } from "../app";
 import  {createServer} from "../utils/server"
 
-const app= createServer()
 
-describe("Test the root path", () => {
+
+
+
+describe("Create OTP and Resend otp ", () => {
    
-    it("should return test output", async()=>{
-         await supertest(app).post("/v1/otp/createOtp").send({email:"riyaz.on@int.com",phone:765534}).expect(400)
+    it("It should return response code 200 ", async()=>{
+       const res= await  supertest(app).post("/v1/otp/createOtp").send({email:"riyaz@abc.com",phone:86869986})
+
+       expect(res.statusCode).toEqual(200)
     })
     
-  });
+  }); 
