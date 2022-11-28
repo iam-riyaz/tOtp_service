@@ -25,7 +25,7 @@ export const createOtp = async (req: Request, res: Response) => {
       const otp = speakeasy.totp({
         secret: secretKey,
         encoding: "base32",
-        step: 30,
+        step: 60,
       });
 
       // Email sending otptions
@@ -74,7 +74,7 @@ export const createOtp = async (req: Request, res: Response) => {
       });
       return;
     }
-    
+
     else{
 
     
