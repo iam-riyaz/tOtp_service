@@ -4,12 +4,14 @@ import * as otpServices from "../services/otp.services";
 import { mailSenderFunction } from "../config/mail";
 import qrcode from "qrcode";
 
-//controller to create secret key and send/resend otp to provided email address and responsding QR code URL 
+
+
+// controller to create secret key and send/resend otp to provided email address and responsding QR code URL 
 export const createOtp = async (req: Request, res: Response) => {
  
   try {
     const { email, phone } = req.body;
-     
+    
     const ifEmailExists = await otpServices.ifEmailExists(email);
 
     if (!ifEmailExists) {
@@ -57,6 +59,7 @@ export const createOtp = async (req: Request, res: Response) => {
           });
           return;
         }
+
 
         mailSenderFunction(mailOptionsSender); //email sending function
         console.info("OTP sent to Email:", Date.now());
@@ -113,6 +116,8 @@ export const createOtp = async (req: Request, res: Response) => {
         return;
       }
 
+
+    
       mailSenderFunction(mailOptionsSender); //email sending function
       console.info("OTP sent to Email:", Date.now());
 
