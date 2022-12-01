@@ -16,6 +16,11 @@ const app= createServer()
 
 app.use("/v1/otp", otpRouter);
 
+app.get("/",(req,res) => {
+console.log("server is running");
+res.send("server is running");
+})
+
 
 app.use(errors());
 

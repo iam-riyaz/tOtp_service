@@ -10,3 +10,5 @@ otpRouter.post("/createOtp",validation.emailAndPhone, otpController.createOtp);
 
 otpRouter.post("/validateOtp", otpController.validateOtp);
 
+
+
