@@ -27,8 +27,9 @@ app.use(errors());
 
 
 connectDB().then(() => {
+  
   app.listen(port, () => {
-    // console.log(`listioning on port ${port}`);
+    console.log(`listioning on port ${port}`);
   });
 });
 
