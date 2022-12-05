@@ -34,6 +34,7 @@
   "dependencies": {
     "@jest/globals": "^29.3.1",
     "@types/jest": "^29.2.3",
+    "@types/mongoose": "^5.11.97",
     "@types/node-fetch": "^2.6.2",
     "@types/nodemailer": "^6.4.6",
     "@types/qrcode": "^1.5.0",
