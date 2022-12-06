@@ -1,8 +1,85 @@
 import speakeasy from "speakeasy";
 import { Request, Response } from "express";
 import * as otpServices from "../services/otp.services";
-import { mailSenderFunction } from "../config/mail";
 import qrcode from "qrcode";
+
+import crypto from "crypto";
+
+
+// ----------------------------------------------------------------
+// globle valiables for storing the data
+
+let myData=[{data:"riyaz ahmad",expireAt:Math.floor((Date.now())+60000)}]
+
+// let milliSecond=myData[0].expireAt
+// let dateObj= new Date(milliSecond)
+// console.log(dateObj.toLocaleDateString()+" "+dateObj.toLocaleTimeString())
+
+for(let i=0; i<myData.length; i++){
+  if(myData[i].expireAt<=Date.now()){
+    myData=myData.splice(i,i)
+  }
+}
+
+
+// ----------------------------------------------------------------
+
+
+
+
+
+
+
+
+// ----------------------------------------------------------------
+const algorithm = 'aes-256-cbc';
+const key = crypto.randomBytes(32);
+const iv = crypto.randomBytes(16);
+
+function encrypt(text:any) {
+ let cipher = crypto.createCipheriv(algorithm, Buffer.from(key), iv);
+ let encrypted = cipher.update(text);
+ encrypted = Buffer.concat([encrypted, cipher.final()]);
+ return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') };
+}
+
+function decrypt(text:any) {
+ let iv = Buffer.from(text.iv, 'hex');
+ let encryptedText = Buffer.from(text.encryptedData, 'hex');
+ let decipher = crypto.createDecipheriv(algorithm, Buffer.from(key), iv);
+ let decrypted = decipher.update(encryptedText);
+ decrypted = Buffer.concat([decrypted, decipher.final()]);
+ return decrypted.toString();
+}
+
+const enct= encrypt("1")
+const enct2= enct.iv
+console.log({enct});
+
+console.log("real msg:",decrypt(enct));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ----------------------------------------------------------------
+
+
+
+
+
+
+
 
 
 
@@ -30,12 +107,14 @@ export const createOtp = async (req: Request, res: Response) => {
         step: 60,
       });
 
+
       // Email sending otptions
       const mailOptionsSender = {
         to: email,
         subject: `OTP for email verification ${email}`,
         otp: `your OTP is: ${otp} and valid for 30 seconds only`,
       };
+      
 
       // saving data in Mongo database
       await otpServices.createOtp({

@@ -1,4 +1,4 @@
-import express from "express";
+
 import dotenv from "dotenv";
 import { otpRouter } from "./routes/otp.Route";
 import { connectDB } from "./config/db";
@@ -12,7 +12,7 @@ dotenv.config();
 
 const port = process.env.PORT || 2000;
 
-const app= createServer()
+const app= createServer() 
 
 app.use("/v1/otp", otpRouter);
 
