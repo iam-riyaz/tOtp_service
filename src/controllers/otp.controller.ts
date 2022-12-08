@@ -6,6 +6,7 @@ import qrcode from "qrcode";
 import crypto from "crypto";
 import { createNoSubstitutionTemplateLiteral } from "typescript";
 
+
 // ----------------------------------------------------------------
 // globle valiables for storing the data
 
@@ -15,17 +16,11 @@ interface IMyData {
 }
 
 let myData = [
-  { data: { email: "", otp: "" }, expireAt: Math.floor(Date.now() + 60000) },
+  { data: { email: "", otp: "" }, expireAt: Math.floor(Date.now() ) },
 ];
 
-const interval = setInterval(function () {
-  for (let i = 0; i < myData.length; i++) {
-    if (myData[i].expireAt <= Date.now()) {
-      myData.shift();
-    }
-  }
-  console.log("auto delete OTP data is On");
-}, 60000);
+
+
 
 async function autoDelete() {
   const interval = setInterval(function () {
@@ -36,8 +31,9 @@ async function autoDelete() {
     }
     console.log("auto delete OTP data is On");
     console.log("number of stored items: " + myData.length);
-  }, 30000);
+  }, 1000);
 }
+
 
 autoDelete();
 
@@ -272,7 +268,7 @@ export const validateOtp = async (req: Request, res: Response) => {
 
     // console.info("otp verified successfully:", Date.now());
     // return;
-    
+
   } catch {
     res.status(400).send({
       success: false,
