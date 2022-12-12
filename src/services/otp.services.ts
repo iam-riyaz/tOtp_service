@@ -24,7 +24,7 @@ export const ifEmailExists = async (email: string) => {
 };
 
 // this service will return single user data object from database find by Email
-export const validateOtp = async (email: string) => {
+export const findInDataBase = async (email: string) => {
   const data = await TempUserDataMongo.findOne({ email });
 
   return data;

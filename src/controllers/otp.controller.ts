@@ -82,7 +82,7 @@ export const createOtp = async (req: Request, res: Response) => {
 
     
     // extract userData form Database
-    const userData = await otpServices.validateOtp(email);
+    const userData = await otpServices.findInDataBase(email);
 
 
     const userSecretKey = userData?.secretKey || "";
@@ -148,7 +148,7 @@ export const validateOtp = async (req: Request, res: Response) => {
     const email = req.body.email;
 
     // to Extract the secretKey form database 
-    const tempUserData = await otpServices.validateOtp(email);
+    const tempUserData = await otpServices.findInDataBase(email);
     const secretKey = tempUserData?.secretKey || "";
 
     console.info("get secretKey form database for verification:", Date.now());
