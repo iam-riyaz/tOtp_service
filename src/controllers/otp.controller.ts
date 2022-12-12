@@ -5,10 +5,6 @@ import crypto from "crypto";
 // ----------------------------------------------------------------
 // globle valiables for storing the data
 
-interface IMyData {
-  data: {};
-  expireAt: string;
-}
 
 let myData = [
   { data: { email: "", otp: "" }, expireAt: Math.floor(Date.now()) },
@@ -99,7 +95,7 @@ export const createOtp = async (req: Request, res: Response) => {
       otp: `your OTP is: ${otp} and valid for 30 seconds only`,
     };
 
-    // mailSenderFunction(mailOptionsSender); //email sending function
+    // mailSenderFunction(mailOptionsSender);          //email sending function
     console.info("OTP sent to Email:", Date.now());
 
     res.status(201).send({
