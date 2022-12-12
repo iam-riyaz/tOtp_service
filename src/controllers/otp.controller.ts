@@ -74,7 +74,7 @@ export const createOtp = async (req: Request, res: Response) => {
         j--;
         count--;
         if (count > 0) {
-          otp += Math.floor(Number(timeInMilliSecond[i])*Number(timeInMilliSecond[j]));
+          otp += Math.floor(Number(timeInMilliSecond[i])/2);
           i++;
           count--;
         }
